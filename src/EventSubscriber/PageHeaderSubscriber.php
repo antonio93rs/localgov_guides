@@ -3,6 +3,7 @@
 namespace Drupal\localgov_guides\EventSubscriber;
 
 use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\localgov_core\Event\PageHeaderDisplayEvent;
 use Drupal\node\Entity\Node;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -13,6 +14,23 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @package Drupal\localgov_guides\EventSubscriber
  */
 class PageHeaderSubscriber implements EventSubscriberInterface {
+
+  /**
+   * The entity repository service.
+   *
+   * @var \Drupal\Core\Entity\EntityRepositoryInterface
+   */
+  protected $entityRepository;
+
+  /**
+   * PageHeaderSubscriber constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   *   The entity repository.
+   */
+  public function __construct(EntityRepositoryInterface $entity_repository) {
+    $this->entityRepository = $entity_repository;
+  }
 
   /**
    * {@inheritdoc}
@@ -40,6 +58,7 @@ class PageHeaderSubscriber implements EventSubscriberInterface {
 
     $overview = $node->localgov_guides_parent->entity ?? NULL;
     if (!empty($overview)) {
+      $overview = $this->entityRepository->getTranslationFromContext($overview);
       $event->setTitle($overview->getTitle());
       if ($overview->get('body')->summary) {
         $event->setLede([
